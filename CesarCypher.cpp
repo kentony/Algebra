@@ -1,10 +1,9 @@
-#include <algorithm>
-#include <cmath>
-#include <vector>
 #include <iostream>
+#include <io.h>
 #include <fstream>
+#include <vector>
 #include <string>
-#include <map>
+
 
 using namespace std;
 
@@ -17,84 +16,79 @@ int gcd(int a, int b) {
 	return a;
 }
 
+int main(){
+	int m = 76; //26 a 26 A 24 !~
+	string alph = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!#$%&'()*+,-./";
+	string word, outword;
+	ifstream in;
+	ofstream out;
+	string input = "input.txt";
+	string output = "output.txt";
 
-char crypto_function(const char C, long & input_size, int n, int k) {
-	char result = (C * n + k) % input_size;
-	//char result = C ^ n;
-	return result;
-}
+	int code;
+	cout << "1 - code, 2 - decode\n";
+	cin >> code;
 
-char de_crypto_function(const char C, long & input_size, int n, int k) {
-	char result = ((C - 4)*(5^(-1))) % input_size;
-	//char result = C ^ n;
-	return result;
-}
+	if(code == 1){
 
-
-void read_file(const char * path, unsigned char* & temp, long & input_size) {
-	ifstream in(path, ios::in);
-	in.seekg(0, in.end);
-	input_size = in.tellg();
-	in.seekg(0, in.beg);
-
-	if (input_size > 0) {
-		char* file = new char[input_size];
-		in.read(file, input_size);
-		temp = new unsigned char[input_size];
-		for (long i = 0; i < input_size; i++) {
-			temp[i] = file[i];
+		in.open(input);
+		out.open(output);
+		int n, k;
+		while (true) {
+			cout << "Enter N and K" << endl;
+			cin >> n >> k;
+			if (gcd(n, m) == 1) break;
+			cout << "Not correct: GCD(" << n << ", 50) != 1\nRe-";
 		}
-		delete[] file;
+		int A, B;
+		while(!(in.eof())){
+			out << " ";
+			in >> word;
+			outword = "";
+			for(int i = 0; i < word.length(); i++){
+				for (int j = 0; j < alph.size(); j++){
+					if (word[i] == alph[j]){
+						A = j;
+						B = (A * n + k) % m;
+						outword += alph[B];
+						break;
+					}
+				}
+			}
+			out << outword;
+		}
 	}
-	in.close();
-}
+	else{
 
-void write_file(const char * path, unsigned char* file, long & input_size, int n, int k) {
-	ofstream output(path, ios::out);
-	for (long i = 0; i < input_size - 2; i++) { // КОСТЫЛЬ. НИХРЕНА НЕ ПОНЯТНО ПОЧЕМУ "- 2".
-		output << crypto_function(file[i], input_size, n, k);
+		in.open(output);
+		out.open(input);
+		int n, k;
+		while (true) {
+			cout << "Enter N and K" << endl;
+			cin >> n >> k;
+			if (gcd(n, m) == 1) break;
+			cout << "Not correct: GCD(" << n << ", 50) != 1\nRe-";
+		}
+		int x = 0;
+        while ((((n * x) % m) - 1) != 0)
+            x++;
+		int A, B;
+		while(!(in.eof())){
+			out << " ";
+			in >> word;
+			outword = "";
+			for(int i = 0; i < word.length(); i++){
+				for (int j = 0; j < alph.size(); j++){
+					if (word[i] == alph[j]){
+						B = j;
+						A = (((B - k + m) % m) * x) % m;
+						outword += alph[A];
+						break;
+					}
+				}
+			}
+			out << outword;
+		}
 	}
-	output.flush();
-	output.close();
-}
-
-void decode_write_file(const char * path, unsigned char* file, long & input_size, int n, int k) {
-	ofstream output(path, ios::out);
-	for (long i = 0; i < input_size; i++) {
-		output << crypto_function(file[i], input_size, n, k);
-	}
-	output.flush();
-	output.close();
-}
-
-
-int main() {
-	
-	unsigned char * temp;
-	long input_size;
-	
-	char * input_path = "input.txt";
-	char * output_path = "output.txt";
-	char * reoutput_path = "reoutput.txt";
-
-	read_file(input_path, temp, input_size);
-	
-	bool correct = false;
-	int n, k;
-	while (!correct) {
-		cout << "Enter N and K" << endl;
-		cin >> n >> k;
-		if (gcd(n, input_size) == 1) break;
-		cout << "Not correct: GCD != 1\nRe-";
-	}
-	cout << "Message Length: " << input_size << endl;
-	cout << "You wrote correct N and K\n";
-	write_file(output_path, temp, input_size, n, k);
-	
-	//try to decode
-	read_file(output_path, temp, input_size);
-	decode_write_file(reoutput_path, temp, input_size, n, k);
-
-
 	return 0;
 }
